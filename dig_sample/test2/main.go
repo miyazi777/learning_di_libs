@@ -6,11 +6,15 @@ import (
 	"go.uber.org/dig"
 )
 
-type BookService struct {
+type BookService interface {
+	Display()
+}
+
+type BookServiceImpl struct {
 	Repository BookRepository
 }
 
-func (s *BookService) Display() {
+func (s *BookServiceImpl) Display() {
 	name := s.Repository.GetName()
 	fmt.Println(name)
 }
@@ -31,11 +35,11 @@ func main() {
 		return &BookRepositoryImpl{}
 	})
 
-	c.Provide(func(r BookRepository) *BookService {
-		return &BookService{Repository: r}
+	c.Provide(func(r BookRepository) BookService {
+		return &BookServiceImpl{Repository: r}
 	})
 
-	c.Invoke(func(service *BookService) {
+	c.Invoke(func(service BookService) {
 		service.Display()
 	})
 }

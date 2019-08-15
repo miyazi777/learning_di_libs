@@ -1,4 +1,4 @@
-module test2
+module test3
 
 go 1.12
 

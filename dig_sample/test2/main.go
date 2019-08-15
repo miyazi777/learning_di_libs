@@ -6,40 +6,44 @@ import (
 	"go.uber.org/dig"
 )
 
-type BookService interface {
+type UseCase interface {
 	Display()
 }
 
-type BookServiceImpl struct {
-	Repository BookRepository
+func NewUseCase(r Repository) UseCase {
+	return &UseCaseImpl{repository: r}
 }
 
-func (s *BookServiceImpl) Display() {
-	name := s.Repository.GetName()
+type UseCaseImpl struct {
+	repository Repository
+}
+
+func (s UseCaseImpl) Display() {
+	name := s.repository.GetName()
 	fmt.Println(name)
 }
 
-type BookRepository interface {
+type Repository interface {
 	GetName() string
 }
 
-type BookRepositoryImpl struct{}
+func NewRepository() Repository {
+	return &RepositoryImpl{}
+}
 
-func (b *BookRepositoryImpl) GetName() string {
-	return "testbook"
+type RepositoryImpl struct{}
+
+func (r *RepositoryImpl) GetName() string {
+	return "test string"
+}
+
+func run(s UseCase) {
+	s.Display()
 }
 
 func main() {
 	c := dig.New()
-	c.Provide(func() BookRepository {
-		return &BookRepositoryImpl{}
-	})
-
-	c.Provide(func(r BookRepository) BookService {
-		return &BookServiceImpl{Repository: r}
-	})
-
-	c.Invoke(func(service BookService) {
-		service.Display()
-	})
+	c.Provide(NewRepository)
+	c.Provide(NewUseCase)
+	c.Invoke(run)
 }
